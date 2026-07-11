@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  plan      String   @default("free")
+  credits   Int      @default(100)
+  createdAt DateTime @default(now())
+
+  documents Document[]
+  apiKeys   ApiKey[]
+  usage     Usage[]
+  sessions  Session[]
+}
+
+model Document {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
+  pages           Int      @default(0)
+  status          String   @default("processing")
+  confidence      Float?
+  format          String   @default("markdown")
+  size            Int      @default(0)
+  language        String   @default("en")
+  outputMarkdown  String   @default("")
+  outputJson      String   @default("")
+  outputHtml      String   @default("")
+  tablesCount     Int      @default(0)
+  formulasCount   Int      @default(0)
+  imagesCount     Int      @default(0)
+  processingTime  Float    @default(0)
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  key       String    @unique
+  lastUsed  DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Usage {
+  id         String @id @default(cuid())
+  userId     String
+  pagesUsed  Int    @default(0)
+  apiCalls   Int    @default(0)
+  storageUsed Int   @default(0)
+  date       String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  token     String   @id
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
