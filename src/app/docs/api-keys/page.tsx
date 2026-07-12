@@ -14,7 +14,7 @@ export default function ApiKeysPage() {
             <span className="text-blue-400">curl</span> -X POST https://api.parsemind.ai/v1/api-keys \<br />
             &nbsp;&nbsp;-H &quot;Authorization: Bearer sk-prod-...&quot; \<br />
             &nbsp;&nbsp;-H &quot;Content-Type: application/json&quot; \<br />
-            &nbsp;&nbsp;-d '{'{"name": "my-key"}'}'
+            &nbsp;&nbsp;-d &apos;{'{"name": "my-key"}'}&apos;
           </div>
         </section>
 

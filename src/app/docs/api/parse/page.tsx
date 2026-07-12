@@ -60,7 +60,7 @@ export default function ParseApiPage() {
         <section>
           <h2 className="text-2xl font-semibold mb-4">Response</h2>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 font-mono text-sm">
-            <span className="text-zinc-500">// 202 Accepted</span><br />
+            <span className="text-zinc-500">{'// 202 Accepted'}</span><br />
             {'{'}<br />
             &nbsp;&nbsp;<span className="text-blue-400">&quot;id&quot;</span>: <span className="text-emerald-400">&quot;doc_abc123&quot;</span>,<br />
             &nbsp;&nbsp;<span className="text-blue-400">&quot;status&quot;</span>: <span className="text-emerald-400">&quot;processing&quot;</span>,<br />

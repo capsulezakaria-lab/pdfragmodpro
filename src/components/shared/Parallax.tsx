@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, type ReactNode } from "react"
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform, type MotionValue } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 interface ParallaxProps {
@@ -23,22 +23,30 @@ export function Parallax({
     offset: ["start end", "end start"],
   })
 
-  const transformValue =
-    direction === "up" || direction === "down"
-      ? useTransform(scrollYProgress, [0, 1], direction === "up" ? [speed * 100, -speed * 100] : [-speed * 100, speed * 100])
-      : useTransform(scrollYProgress, [0, 1], [0, speed * 200])
+  const yTransform: MotionValue = useTransform(
+    scrollYProgress,
+    [0, 1],
+    direction === "up" ? [speed * 100, -speed * 100] :
+    direction === "down" ? [-speed * 100, speed * 100] :
+    [0, 0]
+  )
 
-  const xTransform =
-    direction === "left" || direction === "right"
-      ? useTransform(scrollYProgress, [0, 1], direction === "left" ? [speed * 100, -speed * 100] : [-speed * 100, speed * 100])
-      : undefined
+  const xTransform: MotionValue = useTransform(
+    scrollYProgress,
+    [0, 1],
+    direction === "left" ? [speed * 100, -speed * 100] :
+    direction === "right" ? [-speed * 100, speed * 100] :
+    [0, 0]
+  )
+
+  const isVertical = direction === "up" || direction === "down"
 
   return (
     <div ref={ref} className={cn("relative overflow-hidden", className)}>
       <motion.div
         style={{
-          y: direction === "up" || direction === "down" ? transformValue : undefined,
-          x: xTransform,
+          y: isVertical ? yTransform : undefined,
+          x: !isVertical ? xTransform : undefined,
         }}
       >
         {children}

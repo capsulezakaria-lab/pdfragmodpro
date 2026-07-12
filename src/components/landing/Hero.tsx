@@ -86,7 +86,7 @@ export function Hero() {
                   </div>
                   <div className="flex items-center gap-2 pl-5">
                     <span className="text-white/50">-F file=</span>
-                    <span className="text-[#FFC857]">"research_paper.pdf"</span>
+                    <span className="text-[#FFC857]">{'"research_paper.pdf"'}</span>
                   </div>
                   <div className="h-px bg-white/[0.06] my-3" />
                   <div className="space-y-2">
@@ -95,11 +95,11 @@ export function Hero() {
                       <span className="text-[#00FF9D] text-xs">AI processing</span>
                     </div>
                     <p className="text-white/50">{'{'}</p>
-                    <p className="pl-4 text-white/50">"status": <span className="text-[#00D9FF]">"complete"</span>,</p>
-                    <p className="pl-4 text-white/50">"pages": <span className="text-[#FFC857]">24</span>,</p>
-                    <p className="pl-4 text-white/50">"confidence": <span className="text-[#FFC857]">99.7</span>,</p>
-                    <p className="pl-4 text-white/50">"language": <span className="text-[#00FF9D]">"en"</span>,</p>
-                    <p className="pl-4 text-white/50">"format": <span className="text-[#00FF9D]">"markdown"</span>,</p>
+                    <p className="pl-4 text-white/50">{'"status": '}<span className="text-[#00D9FF]">{'"complete"'}</span>,</p>
+                    <p className="pl-4 text-white/50">{'"pages": '}<span className="text-[#FFC857]">24</span>,</p>
+                    <p className="pl-4 text-white/50">{'"confidence": '}<span className="text-[#FFC857]">99.7</span>,</p>
+                    <p className="pl-4 text-white/50">{'"language": '}<span className="text-[#00FF9D]">{'"en"'}</span>,</p>
+                    <p className="pl-4 text-white/50">{'"format": '}<span className="text-[#00FF9D]">{'"markdown"'}</span>,</p>
                     <p className="text-white/50">{'}'}</p>
                   </div>
                 </div>

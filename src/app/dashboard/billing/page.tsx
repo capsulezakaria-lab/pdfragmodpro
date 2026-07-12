@@ -27,7 +27,7 @@ export default function BillingPage() {
       })
       const data = await res.json()
       if (data.success && data.data?.checkoutUrl) {
-        window.location.href = data.data.checkoutUrl
+        window.location.assign(data.data.checkoutUrl)
       }
     } catch {}
     setLoading(null)
@@ -43,7 +43,7 @@ export default function BillingPage() {
       })
       const data = await res.json()
       if (data.success && data.data?.portalUrl) {
-        window.location.href = data.data.portalUrl
+        window.location.assign(data.data.portalUrl)
       }
     } catch {}
     setLoading(null)

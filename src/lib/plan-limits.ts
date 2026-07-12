@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import type { PrismaClient } from "@/generated/prisma/client"
 import { rateLimit, addRateLimitHeaders } from "@/lib/rate-limit"
 
 type RouteHandler = (
@@ -42,7 +43,7 @@ export function withRateLimit(handler: RouteHandler, scope = "default") {
 
 export async function checkPlanLimits(
   userId: string,
-  prisma: any
+  prisma: PrismaClient
 ): Promise<{ allowed: boolean; error?: string }> {
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) return { allowed: false, error: "User not found" }

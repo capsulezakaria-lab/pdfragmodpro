@@ -10,7 +10,19 @@ import Link from "next/link"
 export default function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const { token } = useAuthStore()
-  const [doc, setDoc] = useState<any>(null)
+  const [doc, setDoc] = useState<{
+    name: string
+    pages: number
+    language: string
+    status: string
+    confidence: number | null
+    tablesCount: number
+    formulasCount: number
+    imagesCount: number
+    format: string
+    outputMarkdown: string | null
+    outputJson: string | null
+  } | null>(null)
 
   useEffect(() => {
     if (!token) return

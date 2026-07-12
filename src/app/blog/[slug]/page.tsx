@@ -1,5 +1,3 @@
-"use client"
-
 import Link from "next/link"
 import { Container, Badge, Heading, Text, Button } from "@/components/ui"
 import { Reveal } from "@/components/shared/Reveal"

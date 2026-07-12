@@ -29,7 +29,7 @@ export default function QuickStartPage() {
         <section>
           <h2 className="text-2xl font-semibold mb-4">3. Parse the response</h2>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 font-mono text-sm">
-            <span className="text-zinc-500">// Response</span><br />
+            <span className="text-zinc-500">{'// Response'}</span><br />
             {'{'}<br />
             &nbsp;&nbsp;<span className="text-blue-400">&quot;status&quot;</span>: <span className="text-emerald-400">&quot;complete&quot;</span>,<br />
             &nbsp;&nbsp;<span className="text-blue-400">&quot;pages&quot;</span>: <span className="text-amber-400">24</span>,<br />
