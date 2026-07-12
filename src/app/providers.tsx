@@ -6,6 +6,7 @@ import { CursorGlow } from "@/components/shared/CursorGlow"
 import { AuroraBackground } from "@/components/shared/AuroraBackground"
 import { BlurCircles } from "@/components/shared/BlurCircles"
 import { Particles } from "@/components/shared/Particles"
+import { AuthLoader } from "@/components/auth/AuthLoader"
 
 interface ProvidersProps {
   children: ReactNode
@@ -13,7 +14,7 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <>
+    <AuthLoader>
       <SmoothScroll>
         <AuroraBackground />
         <BlurCircles />
@@ -21,6 +22,6 @@ export function Providers({ children }: ProvidersProps) {
         {children}
       </SmoothScroll>
       <CursorGlow />
-    </>
+    </AuthLoader>
   )
 }

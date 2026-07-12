@@ -6,15 +6,46 @@ import { Button, Input } from "@/components/ui"
 import { GithubIcon } from "@/components/ui/Icons"
 import { Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/stores/auth"
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const router = useRouter()
+  const { setUser } = useAuthStore()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => setLoading(false), 2000)
+    setError("")
+
+    try {
+      const res = await fetch("/api/v1/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName, email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error?.message || "Registration failed")
+        setLoading(false)
+        return
+      }
+
+      setUser(data.data.user, data.data.token)
+      router.push("/dashboard")
+    } catch {
+      setError("Network error. Please try again.")
+      setLoading(false)
+    }
   }
 
   return (
@@ -35,17 +66,29 @@ export function RegisterForm() {
           <p className="text-sm text-white/40 mt-2">Start transforming PDFs into AI-ready knowledge</p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <Input
               label="First Name"
               placeholder="John"
               id="first-name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
             />
             <Input
               label="Last Name"
               placeholder="Doe"
               id="last-name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
             />
           </div>
           <Input
@@ -53,13 +96,20 @@ export function RegisterForm() {
             type="email"
             placeholder="john@example.com"
             id="register-email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <div className="relative">
             <Input
               label="Password"
               type={showPassword ? "text" : "password"}
-              placeholder="Create a strong password"
+              placeholder="Min. 8 characters"
               id="register-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
             />
             <button
               type="button"

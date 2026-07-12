@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 import { Logo } from "@/components/layout/Logo"
 import { cn } from "@/lib/utils"
+import { useAuthStore } from "@/stores/auth"
 import {
   LayoutDashboard,
   FileText,
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { user } = useAuthStore()
 
   return (
     <aside className="fixed top-0 left-0 z-30 h-screen w-64 border-r border-white/[0.06] bg-[#04070D]/90 backdrop-blur-2xl flex flex-col">
@@ -77,10 +79,10 @@ export function Sidebar() {
           <span>Help & Docs</span>
         </Link>
         <div className="mt-4 px-3 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-          <div className="text-xs text-white/50 mb-1">Free Plan</div>
+          <div className="text-xs text-white/50 mb-1 capitalize">{user?.plan || "Free"} Plan</div>
           <div className="flex items-center justify-between">
             <div className="text-xs text-white/40">
-              <span className="text-white font-semibold">45</span> / 100 pages
+              <span className="text-white font-semibold">{user?.credits || 100}</span> / 100 pages
             </div>
             <Link href="/pricing" className="text-xs text-[#00D9FF] hover:underline">
               Upgrade

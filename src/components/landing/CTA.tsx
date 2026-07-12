@@ -33,11 +33,11 @@ export function CTA() {
           </Reveal>
           <Reveal type="fadeInUp" delay={0.2}>
             <div className="flex items-center justify-center gap-4">
-              <Button variant="gradient" size="xl" icon={<ArrowRight className="h-5 w-5" />}>
-                Start Free
+              <Button variant="gradient" size="xl" icon={<ArrowRight className="h-5 w-5" />} asChild>
+                <a href="/register">Start Free</a>
               </Button>
-              <Button variant="glass" size="xl">
-                Talk to Sales
+              <Button variant="glass" size="xl" asChild>
+                <a href="/contact">Talk to Sales</a>
               </Button>
             </div>
           </Reveal>

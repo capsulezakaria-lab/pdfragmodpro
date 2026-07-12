@@ -18,6 +18,8 @@ interface ButtonProps {
   onClick?: () => void
   type?: "button" | "submit" | "reset"
   id?: string
+  asChild?: boolean
+  href?: string
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
@@ -50,57 +52,56 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       children,
       disabled,
+      asChild,
+      href,
       ...props
     },
     ref
   ) => {
     const isGradient = variant === "gradient"
 
+    const content = (
+      <>
+        {isGradient && (
+          <span className="absolute inset-[1px] rounded-[inherit] bg-[#04070D] z-[1] transition-opacity duration-300 group-hover:opacity-80" />
+        )}
+        {loading && (
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        )}
+        {icon && !loading && <span className="relative z-[2]">{icon}</span>}
+        <span className={cn("relative z-[2]", loading && "opacity-0")}>{children}</span>
+      </>
+    )
+
+    const classes = cn(
+      "group relative inline-flex items-center justify-center font-medium transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04070D] disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer",
+      variantStyles[variant],
+      sizeStyles[size],
+      isGradient && "before:rounded-[inherit]",
+      className
+    )
+
+    if (asChild && href) {
+      return (
+        <a href={href} className={classes}>
+          {content}
+        </a>
+      )
+    }
+
     return (
       <motion.button
         ref={ref}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className={cn(
-          "group relative inline-flex items-center justify-center font-medium transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#04070D] disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer",
-          variantStyles[variant],
-          sizeStyles[size],
-          isGradient && "before:rounded-[inherit]",
-          className
-        )}
+        className={classes}
         disabled={disabled || loading}
         {...props}
       >
-        {isGradient && (
-          <span className="absolute inset-[1px] rounded-[inherit] bg-[#04070D] z-[1] transition-opacity duration-300 group-hover:opacity-80" />
-        )}
-        {loading && (
-          <svg
-            className="animate-spin h-4 w-4"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
-        )}
-        {icon && !loading && (
-          <span className="relative z-[2]">{icon}</span>
-        )}
-        <span className={cn("relative z-[2]", loading && "opacity-0")}>
-          {children}
-        </span>
+        {content}
       </motion.button>
     )
   }

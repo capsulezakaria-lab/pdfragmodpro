@@ -41,14 +41,14 @@ export function Hero() {
 
             <Reveal type="fadeInUp" delay={0.4}>
               <div className="flex flex-wrap items-center gap-4">
-                <Button variant="gradient" size="xl" icon={<ArrowRight className="h-5 w-5" />}>
-                  Start Free
+                <Button variant="gradient" size="xl" icon={<ArrowRight className="h-5 w-5" />} asChild>
+                  <a href="/register">Start Free</a>
                 </Button>
-                <Button variant="glass" size="xl" icon={<Play className="h-5 w-5" />}>
-                  Watch Demo
+                <Button variant="glass" size="xl" icon={<Play className="h-5 w-5" />} asChild>
+                  <a href="#demo">Watch Demo</a>
                 </Button>
-                <Button variant="ghost" size="xl" icon={<GithubIcon className="h-5 w-5" />}>
-                  GitHub
+                <Button variant="ghost" size="xl" icon={<GithubIcon className="h-5 w-5" />} asChild>
+                  <a href="https://github.com/capsulezakaria-lab/pdfragmodpro" target="_blank" rel="noopener noreferrer">GitHub</a>
                 </Button>
               </div>
             </Reveal>

@@ -71,8 +71,8 @@ export function Navbar() {
               <Star className="h-3 w-3" /> 2.4k
             </span>
           </Link>
-          <Button variant="gradient" size="sm">
-            Start Free
+          <Button variant="gradient" size="sm" asChild>
+            <a href="/register">Start Free</a>
           </Button>
         </div>
 

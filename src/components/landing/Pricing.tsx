@@ -166,6 +166,8 @@ export function Pricing() {
                     variant={plan.popular ? "gradient" : "glass"}
                     size="md"
                     className="w-full mt-8"
+                    asChild
+                    href="/register"
                   >
                     {plan.cta}
                   </Button>

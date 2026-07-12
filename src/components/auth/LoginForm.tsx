@@ -6,15 +6,44 @@ import { Button, Input } from "@/components/ui"
 import { GithubIcon } from "@/components/ui/Icons"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useAuthStore } from "@/stores/auth"
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const router = useRouter()
+  const { setUser } = useAuthStore()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => setLoading(false), 2000)
+    setError("")
+
+    try {
+      const res = await fetch("/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error?.message || "Login failed")
+        setLoading(false)
+        return
+      }
+
+      setUser(data.data.user, data.data.token)
+      router.push("/dashboard")
+    } catch {
+      setError("Network error. Please try again.")
+      setLoading(false)
+    }
   }
 
   return (
@@ -35,12 +64,21 @@ export function LoginForm() {
           <p className="text-sm text-white/40 mt-2">Sign in to your ParseMind AI account</p>
         </div>
 
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="Email"
             type="email"
             placeholder="john@example.com"
             id="login-email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <div className="relative">
             <Input
@@ -48,6 +86,9 @@ export function LoginForm() {
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               id="login-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
             />
             <button
               type="button"
@@ -63,9 +104,6 @@ export function LoginForm() {
               <input type="checkbox" className="h-4 w-4 rounded border-white/20 bg-white/5 text-[#00D9FF] focus:ring-[#00D9FF]" />
               <span className="text-sm text-white/50">Remember me</span>
             </label>
-            <Link href="/forgot-password" className="text-sm text-[#00D9FF] hover:underline">
-              Forgot password?
-            </Link>
           </div>
 
           <Button

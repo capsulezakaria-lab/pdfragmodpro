@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import crypto from "crypto"
 
 export function success<T>(data: T, status = 200) {
   return NextResponse.json({ success: true, data }, { status })
@@ -39,19 +40,9 @@ export function getAuthToken(request: Request): string | null {
 }
 
 export function generateId(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
-  let result = ""
-  for (let i = 0; i < 24; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
+  return crypto.randomUUID()
 }
 
 export function generateApiKey(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789"
-  let result = "sk-"
-  for (let i = 0; i < 40; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
+  return "sk-" + crypto.randomBytes(32).toString("hex")
 }
