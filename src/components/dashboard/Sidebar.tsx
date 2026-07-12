@@ -13,6 +13,7 @@ import {
   BarChart3,
   Settings,
   HelpCircle,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react"
 
@@ -27,6 +28,7 @@ const navItems: NavItem[] = [
   { label: "Documents", href: "/dashboard/documents", icon: FileText },
   { label: "API Keys", href: "/dashboard/api-keys", icon: Key },
   { label: "Usage", href: "/dashboard/usage", icon: BarChart3 },
+  { label: "Billing", href: "/dashboard/billing", icon: CreditCard },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 

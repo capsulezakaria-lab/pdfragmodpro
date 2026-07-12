@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server"
 import { success, error, unauthorized } from "@/lib/api-utils"
 import prisma from "@/lib/db"
+import { withRateLimit, checkPlanLimits } from "@/lib/plan-limits"
 
-export async function POST(request: NextRequest) {
+async function parseHandler(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization")
     if (!authHeader?.startsWith("Bearer ")) {
@@ -14,6 +15,16 @@ export async function POST(request: NextRequest) {
     if (!keyRecord) {
       return unauthorized("Invalid API key")
     }
+
+    const planCheck = await checkPlanLimits(keyRecord.userId, prisma)
+    if (!planCheck.allowed) {
+      return error(planCheck.error!, 403)
+    }
+
+    await prisma.apiKey.update({
+      where: { id: keyRecord.id },
+      data: { lastUsed: new Date() },
+    })
 
     const formData = await request.formData()
     const file = formData.get("file") as File | null
@@ -43,6 +54,11 @@ export async function POST(request: NextRequest) {
         size: file.size,
         language: ocrLanguage === "auto" ? "en" : ocrLanguage,
       },
+    })
+
+    await prisma.user.update({
+      where: { id: keyRecord.userId },
+      data: { credits: { decrement: pages } },
     })
 
     setTimeout(async () => {
@@ -90,6 +106,8 @@ export async function POST(request: NextRequest) {
     return error("Internal server error", 500)
   }
 }
+
+export const POST = withRateLimit(parseHandler, "parse")
 
 function generateMarkdownContent(pages: number): string {
   const sections = [

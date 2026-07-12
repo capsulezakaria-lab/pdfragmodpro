@@ -1,54 +1,82 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { StatsCard, DocumentsTable, UsageChart, ActivityFeed } from "@/components/dashboard"
-import { FileText, Scan, Database, Clock } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useAuthStore } from "@/stores/auth"
+import { StatsCard } from "@/components/dashboard/StatsCard"
+import { UsageChart } from "@/components/dashboard/UsageChart"
+import { DocumentsTable } from "@/components/dashboard/DocumentsTable"
+import { ActivityFeed } from "@/components/dashboard/ActivityFeed"
+import { FileText, Clock, HardDrive, Zap } from "lucide-react"
 
-const stats = [
-  { icon: <FileText className="h-4 w-4 text-[#00D9FF]" />, label: "Documents Processed", value: "1,247", change: "+12.5%", positive: true, gradient: "from-[#00D9FF] to-[#5B6CFF]" },
-  { icon: <Scan className="h-4 w-4 text-[#5B6CFF]" />, label: "Pages Parsed", value: "34,891", change: "+8.2%", positive: true, gradient: "from-[#5B6CFF] to-[#8B5CF6]" },
-  { icon: <Database className="h-4 w-4 text-[#00FF9D]" />, label: "Storage Used", value: "2.4 GB", change: "+3.1%", positive: true, gradient: "from-[#00FF9D] to-[#00D9FF]" },
-  { icon: <Clock className="h-4 w-4 text-[#FFC857]" />, label: "Avg. Processing Time", value: "2.4s", change: "-15%", positive: true, gradient: "from-[#FFC857] to-[#FF4D6A]" },
-]
+interface Document {
+  id: string
+  name: string
+  pages: number
+  status: string
+  confidence: number | null
+  format: string
+  createdAt: string
+  processingTime?: number
+}
+
+interface UsageData {
+  pagesUsed: number
+  apiCalls: number
+  storageUsed: number
+  dailyUsage: { date: string; pages: number }[]
+}
 
 export default function DashboardPage() {
-  return (
-    <div className="space-y-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <h1 className="text-2xl font-bold text-white">Overview</h1>
-        <p className="text-sm text-white/40 mt-1">Welcome back, John. Here&apos;s your document processing summary.</p>
-      </motion.div>
+  const { user, token } = useAuthStore()
+  const [docs, setDocs] = useState<Document[]>([])
+  const [usage, setUsage] = useState<UsageData | null>(null)
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-          >
-            <StatsCard {...stat} />
-          </motion.div>
-        ))}
+  useEffect(() => {
+    if (!token) return
+    const headers = { Authorization: `Bearer ${token}` }
+
+    fetch("/api/v1/documents", { headers })
+      .then(r => r.json())
+      .then(d => setDocs(d.data?.documents || []))
+      .catch(() => {})
+
+    fetch("/api/v1/usage", { headers })
+      .then(r => r.json())
+      .then(d => setUsage(d.data))
+      .catch(() => {})
+  }, [token])
+
+  const totalDocs = docs.length
+  const totalPages = docs.reduce((s, d) => s + d.pages, 0)
+  const avgTime = docs.filter(d => d.processingTime).length
+    ? (docs.reduce((s, d) => s + (d.processingTime || 0), 0) / docs.filter(d => d.processingTime).length).toFixed(1) + "s"
+    : "—"
+
+  return (
+    <div>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-white">Welcome back, {user?.name?.split(" ")[0] || "User"}</h1>
+        <p className="text-sm text-white/40 mt-1">Here&apos;s your document processing summary.</p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <UsageChart />
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-white">Recent Documents</h2>
-              <a href="/dashboard/documents" className="text-sm text-[#00D9FF] hover:underline">View all</a>
-            </div>
-            <DocumentsTable limit={5} />
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatsCard label="Documents Processed" value={totalDocs.toLocaleString()} change={totalDocs > 0 ? "+100%" : "0%"} icon={<FileText className="h-5 w-5" />} />
+        <StatsCard label="Pages Parsed" value={totalPages.toLocaleString()} change={totalPages > 0 ? "+100%" : "0%"} icon={<Clock className="h-5 w-5" />} />
+        <StatsCard label="Avg. Processing Time" value={avgTime} change="-15%" icon={<Zap className="h-5 w-5" />} />
+        <StatsCard label="Plan" value={user?.plan?.toUpperCase() || "FREE"} change={`${user?.credits || 100} pages`} icon={<HardDrive className="h-5 w-5" />} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <UsageChart data={usage?.dailyUsage || []} />
         </div>
-        <div className="space-y-6">
-          <ActivityFeed />
+        <div>
+          <ActivityFeed documents={docs.slice(0, 6)} />
         </div>
+      </div>
+
+      <div className="mt-6">
+        <DocumentsTable documents={docs.slice(0, 5)} />
       </div>
     </div>
   )

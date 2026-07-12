@@ -3,6 +3,7 @@ import { resolve } from "path"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { PrismaClient } from "../src/generated/prisma/client"
 import pg from "pg"
+import bcrypt from "bcryptjs"
 
 const envPath = resolve(process.cwd(), ".env")
 const envContent = readFileSync(envPath, "utf-8")
@@ -22,13 +23,15 @@ async function main() {
 
   console.log("Seeding database...")
 
+  const hashedPassword = await bcrypt.hash("password123", 12)
+
   const user = await prisma.user.upsert({
     where: { email: "john@example.com" },
     update: {},
     create: {
       name: "John Doe",
       email: "john@example.com",
-      password: "password123",
+      password: hashedPassword,
       plan: "pro",
       credits: 10000,
     },

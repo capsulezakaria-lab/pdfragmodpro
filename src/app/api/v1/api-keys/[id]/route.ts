@@ -1,29 +1,26 @@
 import { NextRequest } from "next/server"
-import { success, error, unauthorized, notFound } from "@/lib/api-utils"
+import { success, error, unauthorized } from "@/lib/api-utils"
 import prisma from "@/lib/db"
+import { withRateLimit } from "@/lib/plan-limits"
 
-async function authenticate(request: NextRequest): Promise<string | null> {
-  const auth = request.headers.get("authorization")
-  if (!auth?.startsWith("Bearer ")) return null
-  const token = auth.slice(7)
-  const session = await prisma.session.findUnique({ where: { token } })
-  return session?.userId || null
-}
-
-export async function DELETE(
+async function apiKeyDeleteHandler(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const userId = await authenticate(request)
-    if (!userId) return unauthorized()
+    const auth = request.headers.get("authorization")
+    if (!auth?.startsWith("Bearer ")) return unauthorized()
 
-    const { id } = await params
-    const key = await prisma.apiKey.findUnique({ where: { id } })
+    const token = auth.slice(7)
+    const session = await prisma.session.findUnique({ where: { token } })
+    if (!session) return unauthorized("Invalid session")
 
-    if (!key || key.userId !== userId) {
-      return notFound("API key not found")
-    }
+    const params = await context?.params
+    const id = params?.id
+    if (!id) return error("API key ID is required", 422)
+
+    const key = await prisma.apiKey.findFirst({ where: { id, userId: session.userId } })
+    if (!key) return error("API key not found", 404)
 
     await prisma.apiKey.delete({ where: { id } })
     return success({ deleted: true })
@@ -31,3 +28,5 @@ export async function DELETE(
     return error("Internal server error", 500)
   }
 }
+
+export const DELETE = withRateLimit(apiKeyDeleteHandler, "api-keys:delete")

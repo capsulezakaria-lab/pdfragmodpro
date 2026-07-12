@@ -1,81 +1,31 @@
 import { NextRequest } from "next/server"
-import { success, error, unauthorized, notFound } from "@/lib/api-utils"
+import { success, error, unauthorized } from "@/lib/api-utils"
 import prisma from "@/lib/db"
+import { withRateLimit } from "@/lib/plan-limits"
 
-export async function GET(
+async function documentDetailHandler(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context?: { params: Promise<Record<string, string>> }
 ) {
   try {
-    const authHeader = request.headers.get("authorization")
-    if (!authHeader?.startsWith("Bearer ")) {
-      return unauthorized()
-    }
+    const auth = request.headers.get("authorization")
+    if (!auth?.startsWith("Bearer ")) return unauthorized()
 
-    const apiKey = authHeader.slice(7)
-    const keyRecord = await prisma.apiKey.findUnique({ where: { key: apiKey } })
-    if (!keyRecord) {
-      return unauthorized("Invalid API key")
-    }
+    const token = auth.slice(7)
+    const session = await prisma.session.findUnique({ where: { token } })
+    if (!session) return unauthorized("Invalid session")
 
-    const { id } = await params
-    const doc = await prisma.document.findUnique({ where: { id } })
+    const params = await context?.params
+    const id = params?.id
+    if (!id) return error("Document ID is required", 422)
 
-    if (!doc || doc.userId !== keyRecord.userId) {
-      return notFound("Document not found")
-    }
+    const doc = await prisma.document.findFirst({ where: { id, userId: session.userId } })
+    if (!doc) return error("Document not found", 404)
 
-    return success({
-      id: doc.id,
-      name: doc.name,
-      pages: doc.pages,
-      status: doc.status,
-      confidence: doc.confidence,
-      format: doc.format,
-      language: doc.language,
-      size: doc.size,
-      created_at: doc.createdAt.toISOString(),
-      processing_time: doc.processingTime,
-      tables_count: doc.tablesCount,
-      formulas_count: doc.formulasCount,
-      images_count: doc.imagesCount,
-      output: {
-        markdown: doc.status === "complete" ? doc.outputMarkdown : null,
-        json: doc.status === "complete" ? doc.outputJson : null,
-        html: doc.status === "complete" ? doc.outputHtml : null,
-      },
-    })
+    return success(doc)
   } catch (e) {
     return error("Internal server error", 500)
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const authHeader = request.headers.get("authorization")
-    if (!authHeader?.startsWith("Bearer ")) {
-      return unauthorized()
-    }
-
-    const apiKey = authHeader.slice(7)
-    const keyRecord = await prisma.apiKey.findUnique({ where: { key: apiKey } })
-    if (!keyRecord) {
-      return unauthorized("Invalid API key")
-    }
-
-    const { id } = await params
-    const doc = await prisma.document.findUnique({ where: { id } })
-
-    if (!doc || doc.userId !== keyRecord.userId) {
-      return notFound("Document not found")
-    }
-
-    await prisma.document.delete({ where: { id } })
-    return success({ deleted: true })
-  } catch (e) {
-    return error("Internal server error", 500)
-  }
-}
+export const GET = withRateLimit(documentDetailHandler, "document-detail")

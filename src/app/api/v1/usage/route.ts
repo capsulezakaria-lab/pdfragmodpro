@@ -1,22 +1,22 @@
 import { NextRequest } from "next/server"
 import { success, error, unauthorized } from "@/lib/api-utils"
 import prisma from "@/lib/db"
+import { withRateLimit } from "@/lib/plan-limits"
 
-async function authenticate(request: NextRequest): Promise<string | null> {
-  const auth = request.headers.get("authorization")
-  if (!auth?.startsWith("Bearer ")) return null
-  const token = auth.slice(7)
-  const session = await prisma.session.findUnique({ where: { token } })
-  return session?.userId || null
-}
-
-export async function GET(request: NextRequest) {
+async function usageHandler(request: NextRequest) {
   try {
-    const userId = await authenticate(request)
-    if (!userId) return unauthorized()
+    const auth = request.headers.get("authorization")
+    if (!auth?.startsWith("Bearer ")) return unauthorized()
+
+    const token = auth.slice(7)
+    const session = await prisma.session.findUnique({ where: { token } })
+    if (!session) return unauthorized("Invalid session")
+
+    const user = await prisma.user.findUnique({ where: { id: session.userId } })
+    if (!user) return unauthorized("User not found")
 
     const usageRecords = await prisma.usage.findMany({
-      where: { userId },
+      where: { userId: session.userId },
       orderBy: { date: "desc" },
     })
 
@@ -34,13 +34,12 @@ export async function GET(request: NextRequest) {
     }
 
     return success({
-      summary: {
-        total_pages: totalPages,
-        total_api_calls: totalApiCalls,
-        total_storage_bytes: totalStorage,
-        total_storage_formatted: `${(totalStorage / (1024 * 1024)).toFixed(1)} MB`,
-      },
-      daily: Object.entries(dailyBreakdown).map(([date, data]) => ({
+      pagesUsed: totalPages,
+      pagesLimit: user.credits,
+      apiCalls: totalApiCalls,
+      storageUsed: totalStorage,
+      plan: user.plan,
+      dailyUsage: Object.entries(dailyBreakdown).map(([date, data]) => ({
         date,
         pages: data.pages,
         api_calls: data.api_calls,
@@ -50,3 +49,5 @@ export async function GET(request: NextRequest) {
     return error("Internal server error", 500)
   }
 }
+
+export const GET = withRateLimit(usageHandler, "usage")
